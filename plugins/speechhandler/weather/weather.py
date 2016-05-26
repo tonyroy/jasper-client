@@ -6,7 +6,7 @@ import requests
 from jasper import plugin
 
 YAHOO_YQL_QUERY = \
-    'SELECT * FROM weather.bylocation WHERE location="%s" AND unit="%s"'
+    'select * from weather.forecast where woeid in (select woeid from geo.places(1) where text="%s")'
 YAHOO_YQL_URL = 'https://query.yahooapis.com/v1/public/yql'
 YAHOO_YQL_WEATHER_CONDITION_CODES = {
     0:    'tornado',
@@ -77,18 +77,19 @@ ForecastItem = collections.namedtuple(
 
 
 def get_weather(location, unit="f"):
-    yql_query = YAHOO_YQL_QUERY % (location.replace('"', ''),
-                                   unit.replace('"', ''))
+    yql_query = YAHOO_YQL_QUERY % (location.replace('"', ''))
+    payload={
+      'q'  : yql_query,
+      'format': 'json',
+      'env': 'store://datatables.org/alltableswithkeys'}
+    payload_str = "&".join("%s=%s" % (k,v) for k,v in payload.items())
     r = requests.get(YAHOO_YQL_URL,
-                     params={
-                        'q': yql_query,
-                        'format': 'json',
-                        'env': 'store://datatables.org/alltableswithkeys'},
+                     params=payload_str,
                      headers={'User-Agent': 'Mozilla/5.0'})
     content = r.json()
     # make sure we got data
     try:
-        channel = content['query']['results']['weather']['rss']['channel']
+        channel = content['query']['results']['channel']
     except KeyError:
         # return empty Weather
         return None
