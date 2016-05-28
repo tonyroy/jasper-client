@@ -1,13 +1,10 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8-*-
 import wave
-import json
-import tempfile
 import logging
-import urllib
-import urlparse
 import requests
 from jasper import plugin
+
 
 class WatsonSTTPlugin(plugin.STTPlugin):
     """
@@ -56,8 +53,7 @@ class WatsonSTTPlugin(plugin.STTPlugin):
             language = 'en-US'
 
         self.language = language.lower()
- 
-        self.username =  self.profile['watson']['username']
+        self.username = self.profile['watson']['username']
         self.password = self.profile['watson']['password']
 
     @property
@@ -138,5 +134,3 @@ class WatsonSTTPlugin(plugin.STTPlugin):
             results = tuple(result.strip().upper() for result in results)
             self._logger.info('Transcribed: %r', results)
         return results
-
-
